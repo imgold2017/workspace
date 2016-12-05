@@ -3,29 +3,38 @@ public class PrintNumAndChar {
 
     public static void main(String[] args)
     {
+        //定义一个共享资源
         Object obj=new Object();
         PrintNum pn=new PrintNum(obj);
         PrintChar pc=new PrintChar(obj);
+        //启动打印数字的线程
         new Thread(pn).start();
+        //启动打印字符的线程
         new Thread(pc).start();
     }
 }
 
+//定义打印数字的线程
 class PrintNum implements Runnable {
+    //声明一个类引用
     private Object obj;
-
     public PrintNum(Object obj) {
+        //通过构造器把共享资源（对象）传入
         this.obj = obj;
     }
+    //重写run()方法
     @Override
     public void run(){
         synchronized (obj) {
             for (int i = 1; i < 53; i++) {
                 System.out.print(i);
+                //i%2为求余运算，如果是2的倍数，余数为0
                 if (i % 2 == 0) {
+                    //如果余数为0，则说明已经打印了2个数字，唤醒其他线程
+                    //此处的obj不可省略，否则会抛出IllegalMontiorStateException异常
                     obj.notifyAll();
-
                     try {
+                        //本线程进入等待状态
                         obj.wait();
                     } catch (InterruptedException ex) {
                         ex.printStackTrace();
@@ -37,16 +46,21 @@ class PrintNum implements Runnable {
 }
 
 class PrintChar implements Runnable{
+    //声明一个类引用
     private Object obj;
     public PrintChar(Object obj)
     {
+        //通过构造器把共享资源传入
         this.obj=obj;
     }
+    //重写打印字符的run()方法
     @Override
     public void run(){
         synchronized (obj) {
             for (int i = 0; i <= 26; i++) {
+                //强制转换打印结果为char类型
                 System.out.print((char)(i+'A'));
+                //此处的obj不可省略，否则会抛出IllegalMontiorStateException异常
                 obj.notifyAll();
 
                 try {
